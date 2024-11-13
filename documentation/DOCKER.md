@@ -1,83 +1,82 @@
-# Docker for SimpleTuner
+# SimpleTuner のための Docker
 
-This Docker configuration provides a comprehensive environment for running the SimpleTuner application on various platforms including Runpod, Vast.ai, and other Docker-compatible hosts. It is optimized for ease of use and robustness, integrating tools and libraries essential for machine learning projects.
+この Docker 設定は、Runpod、Vast.ai、その他の Docker 対応ホストを含むさまざまなプラットフォームで SimpleTuner アプリケーションを実行するための包括的な環境を提供します。使いやすさと堅牢性を最適化しており、機械学習プロジェクトに必要なツールやライブラリを統合しています。
 
-## Container Features
+## コンテナの特徴
 
-- **CUDA-enabled Base Image**: Built from `nvidia/cuda:11.8.0-runtime-ubuntu22.04` to support GPU-accelerated applications.
-- **Development Tools**: Includes Git, SSH, and various utilities like `tmux`, `vim`, `htop`.
-- **Python and Libraries**: Comes with Python 3.10 and essential libraries like `poetry` for Python package management.
-- **Huggingface and WandB Integration**: Pre-configured for seamless integration with Huggingface Hub and WandB, facilitating model sharing and experiment tracking.
+- **CUDA 対応ベースイメージ**: GPU 加速アプリケーションをサポートするために `nvidia/cuda:11.8.0-runtime-ubuntu22.04` から構築されています。
+- **開発ツール**: Git、SSH、`tmux`、`vim`、`htop` などのさまざまなユーティリティが含まれています。
+- **Python とライブラリ**: Python 3.10 と、Python パッケージ管理のための必須ライブラリ `poetry` が付属しています。
+- **Huggingface と WandB の統合**: Huggingface Hub と WandB とのシームレスな統合のために事前設定されており、モデルの共有や実験の追跡を容易にします。
 
-## Getting Started
+## はじめに
 
-### Windows OS support via WSL (Experimental)
+### WSL を介した Windows OS サポート（実験的）
 
-The following guide was tested in a WSL2 Distro that has Dockerengine installed.
+以下のガイドは、Dockerengine がインストールされた WSL2 ディストリビューションでテストされました。
 
+### 1. コンテナのビルド
 
-### 1. Building the Container
-
-Clone the repository and navigate to the directory containing the Dockerfile. Build the Docker image using:
+リポジトリをクローンし、Dockerfile が含まれているディレクトリに移動します。次のコマンドを使用して Docker イメージをビルドします。
 
 ```bash
 docker build -t simpletuner .
 ```
 
-### 2. Running the Container
+### 2. コンテナの実行
 
-To run the container with GPU support, execute:
+GPU サポートでコンテナを実行するには、次のコマンドを実行します。
 
 ```bash
 docker run --gpus all -it -p 22:22 simpletuner
 ```
 
-This command sets up the container with GPU access and maps the SSH port for external connectivity.
+このコマンドは、GPU アクセスを持つコンテナをセットアップし、外部接続のために SSH ポートをマッピングします。
 
-### 3. Environment Variables
+### 3. 環境変数
 
-To facilitate integration with external tools, the container supports environment variables for Huggingface and WandB tokens. Pass these at runtime as follows:
+外部ツールとの統合を容易にするために、コンテナは Huggingface と WandB トークンのための環境変数をサポートしています。次のように実行時にこれらを渡します。
 
 ```bash
 docker run --gpus all -e HUGGING_FACE_HUB_TOKEN='your_token' -e WANDB_TOKEN='your_token' -it -p 22:22 simpletuner
 ```
 
-### 4. Data Volumes
+### 4. データボリューム
 
-For persistent storage and data sharing between the host and the container, mount a data volume:
+ホストとコンテナ間での永続的なストレージとデータ共有のために、データボリュームをマウントします。
 
 ```bash
 docker run --gpus all -v /path/on/host:/workspace -it -p 22:22 simpletuner
 ```
 
-### 5. SSH Access
+### 5. SSH アクセス
 
-SSH into the container is configured by default. Ensure you provide your SSH public key through the appropriate environment variable (`SSH_PUBLIC_KEY` for Vast.ai or `PUBLIC_KEY` for Runpod).
+コンテナへの SSH はデフォルトで設定されています。適切な環境変数を通じて SSH 公開鍵を提供することを確認してください（Vast.ai では `SSH_PUBLIC_KEY`、Runpod では `PUBLIC_KEY`）。
 
-### 6. Using SimpleTuner
+### 6. SimpleTuner の使用
 
-Navigate to the SimpleTuner directory, activate the Python virtual environment, and start using or developing the application:
+SimpleTuner ディレクトリに移動し、Python 仮想環境をアクティブにして、アプリケーションの使用または開発を開始します。
 
 ```bash
 cd SimpleTuner
 source .venv/bin/activate
 ```
 
-Run training scripts or other provided utilities directly within this environment.
+トレーニングスクリプトやその他の提供されたユーティリティをこの環境内で直接実行します。
 
-## Additional Configuration
+## 追加設定
 
-### Custom Scripts and Configurations
+### カスタムスクリプトと設定
 
-If you want to add custom startup scripts or modify configurations, extend the entry script (`docker-start.sh`) to fit your specific needs.
+カスタムスタートアップスクリプトを追加したり、設定を変更したりしたい場合は、エントリスクリプト（`docker-start.sh`）を拡張して特定のニーズに合わせてください。
 
-If any capabilities cannot be achieved through this setup, please open a new issue.
+この設定で実現できない機能がある場合は、新しい問題をオープンしてください。
 
 ### Docker Compose
 
-For users who prefer `docker-compose.yaml`, this template is provided for you to extend and customise for your needs.
+`docker-compose.yaml` を好むユーザーのために、このテンプレートが提供されており、ニーズに合わせて拡張およびカスタマイズできます。
 
-Once the stack is deployed you can connect to the container and start operating in it as mentioned in the steps above.
+スタックがデプロイされたら、コンテナに接続して、上記の手順に従って操作を開始できます。
 
 ```bash
 docker compose up -d
@@ -110,49 +109,49 @@ services:
               capabilities: [gpu]
 ```
 
-> ⚠️ Please be cautious of handling your WandB and Hugging Face tokens! It's advised not to commit them even to a private version-control repository to ensure they are not leaked. For production use-cases, key management storage is recommended, but out of scope for this guide.
+> ⚠️ WandB と Hugging Face のトークンを取り扱う際は注意してください！漏洩を防ぐために、プライベートなバージョン管理リポジトリにコミットしないことをお勧めします。プロダクションの使用ケースでは、キー管理ストレージを推奨しますが、これはこのガイドの範囲外です。
 ---
 
-## Troubleshooting
+## トラブルシューティング
 
-### CUDA Version Mismatch
+### CUDA バージョンの不一致
 
-**Symptom**: The application fails to utilize the GPU, or errors related to CUDA libraries appear when attempting to run GPU-accelerated tasks.
+**症状**: アプリケーションが GPU を利用できない、または GPU 加速タスクを実行しようとしたときに CUDA ライブラリに関連するエラーが表示される。
 
-**Cause**: This issue may occur if the CUDA version installed within the Docker container does not match the CUDA driver version available on the host machine.
+**原因**: この問題は、Docker コンテナ内にインストールされている CUDA バージョンがホストマシンで利用可能な CUDA ドライバーバージョンと一致しない場合に発生する可能性があります。
 
-**Solution**:
-1. **Check CUDA Driver Version on Host**: Determine the version of the CUDA driver installed on the host machine by running:
+**解決策**:
+1. **ホストの CUDA ドライバーバージョンを確認**: ホストマシンにインストールされている CUDA ドライバーバージョンを確認するには、次のコマンドを実行します。
    ```bash
    nvidia-smi
    ```
-   This command will display the CUDA version at the top right of the output.
+   このコマンドは、出力の右上に CUDA バージョンを表示します。
 
-2. **Match Container CUDA Version**: Ensure that the version of the CUDA toolkit in your Docker image is compatible with the host's CUDA driver. NVIDIA generally allows forward compatibility but check the specific compatibility matrix on the NVIDIA website.
+2. **コンテナの CUDA バージョンを一致させる**: Docker イメージ内の CUDA ツールキットのバージョンがホストの CUDA ドライバーと互換性があることを確認してください。NVIDIA は一般的に前方互換性を許可していますが、NVIDIA のウェブサイトで特定の互換性マトリックスを確認してください。
 
-3. **Rebuild the Image**: If necessary, modify the base image in the Dockerfile to match the host’s CUDA driver. For example, if your host runs CUDA 11.2 and the container is set up for CUDA 11.8, you might need to switch to an appropriate base image:
+3. **イメージの再構築**: 必要に応じて、Dockerfile のベースイメージをホストの CUDA ドライバーに合わせて変更します。たとえば、ホストが CUDA 11.2 を実行していて、コンテナが CUDA 11.8 用に設定されている場合、適切なベースイメージに切り替える必要があります。
    ```Dockerfile
    FROM nvidia/cuda:11.2.0-runtime-ubuntu22.04
    ```
-   After modifying the Dockerfile, rebuild the Docker image.
+   Dockerfile を変更した後、Docker イメージを再構築します。
 
-### SSH Connection Issues
+### SSH 接続の問題
 
-**Symptom**: Unable to connect to the container via SSH.
+**症状**: SSH 経由でコンテナに接続できない。
 
-**Cause**: Misconfiguration of SSH keys or the SSH service not starting correctly.
+**原因**: SSH キーの設定ミスまたは SSH サービスが正しく起動していない。
 
-**Solution**:
-1. **Check SSH Configuration**: Ensure that the public SSH key is correctly added to `~/.ssh/authorized_keys` in the container. Also, verify that the SSH service is up and running by entering the container and executing:
+**解決策**:
+1. **SSH 設定の確認**: 公開 SSH キーがコンテナ内の `~/.ssh/authorized_keys` に正しく追加されていることを確認します。また、コンテナに入って次のコマンドを実行し、SSH サービスが稼働していることを確認します。
    ```bash
    service ssh status
    ```
-2. **Exposed Ports**: Confirm that the SSH port (22) is properly exposed and mapped when starting the container, as shown in the running instructions:
+2. **公開ポート**: コンテナを起動する際に、SSH ポート (22) が正しく公開され、マッピングされていることを確認します。実行手順は次の通りです。
    ```bash
    docker run --gpus all -it -p 22:22 simpletuner
    ```
 
-### General Advice
+### 一般的なアドバイス
 
-- **Logs and Output**: Review the container logs and output for any error messages or warnings that can provide more context on the issue.
-- **Documentation and Forums**: Consult the Docker and NVIDIA CUDA documentation for more detailed troubleshooting advice. Community forums and issue trackers related to the specific software or dependencies you are using can also be valuable resources.
+- **ログと出力**: コンテナのログや出力を確認し、問題に関するエラーメッセージや警告がないかをチェックします。
+- **ドキュメントとフォーラム**: より詳細なトラブルシューティングのアドバイスについては、Docker および NVIDIA CUDA のドキュメントを参照してください。また、使用している特定のソフトウェアや依存関係に関連するコミュニティフォーラムや問題追跡システムも貴重なリソースとなります。

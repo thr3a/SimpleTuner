@@ -1,107 +1,108 @@
 # SimpleTuner 💹
 
-> ⚠️ **Warning**: The scripts in this repository have the potential to damage your training data. Always maintain backups before proceeding.
+> ⚠️ **警告**: このリポジトリ内のスクリプトは、あなたのトレーニングデータを損なう可能性があります。進める前に必ずバックアップを保持してください。
 
-**SimpleTuner** is geared towards simplicity, with a focus on making the code easily understood. This codebase serves as a shared academic exercise, and contributions are welcome.
+**SimpleTuner** はシンプルさを重視しており、コードが容易に理解できるように設計されています。このコードベースは共有の学術的な演習として機能し、貢献を歓迎します。
 
-## Table of Contents
+## 目次
 
-- [Design Philosophy](#design-philosophy)
-- [Tutorial](#tutorial)
-- [Features](#features)
+- [デザイン哲学](#design-philosophy)
+- [チュートリアル](#tutorial)
+- [機能](#features)
   - [Flux](#flux1)
   - [PixArt Sigma](#pixart-sigma)
   - [Stable Diffusion 2.0/2.1](#stable-diffusion-20--21)
   - [Stable Diffusion 3.0](#stable-diffusion-3)
   - [Kwai Kolors](#kwai-kolors)
-- [Hardware Requirements](#hardware-requirements)
+- [ハードウェア要件](#hardware-requirements)
   - [Flux](#flux1-dev-schnell)
   - [SDXL](#sdxl-1024px)
-  - [Stable Diffusion (Legacy)](#stable-diffusion-2x-768px)
-- [Scripts](#scripts)
-- [Toolkit](#toolkit)
-- [Setup](#setup)
-- [Troubleshooting](#troubleshooting)
+  - [Stable Diffusion (レガシー)](#stable-diffusion-2x-768px)
+- [スクリプト](#scripts)
+- [ツールキット](#toolkit)
+- [セットアップ](#setup)
+- [トラブルシューティング](#troubleshooting)
 
-## Design Philosophy
+## デザイン哲学
 
-- **Simplicity**: Aiming to have good default settings for most use cases, so less tinkering is required.
-- **Versatility**: Designed to handle a wide range of image quantities - from small datasets to extensive collections.
-- **Cutting-Edge Features**: Only incorporates features that have proven efficacy, avoiding the addition of untested options.
+- **シンプルさ**: ほとんどの使用ケースに対して良好なデフォルト設定を持つことを目指し、調整が少なくて済むようにしています。
+- **多様性**: 小規模なデータセットから大規模なコレクションまで、幅広い画像量を扱えるように設計されています。
+- **最先端の機能**: 効果が証明された機能のみを取り入れ、未検証のオプションの追加を避けています。
 
-## Tutorial
+## チュートリアル
 
-Please fully explore this README before embarking on [the tutorial](/TUTORIAL.md), as it contains vital information that you might need to know first.
+[チュートリアル](/TUTORIAL.md)に取り掛かる前に、このREADMEを十分に探索してください。重要な情報が含まれている可能性があります。
 
-For a quick start without reading the full documentation, you can use the [Quick Start](/documentation/QUICKSTART.md) guide.
+完全なドキュメントを読むことなくすぐに始めたい場合は、[クイックスタート](/documentation/QUICKSTART.md)ガイドを使用できます。
 
-For memory-constrained systems, see the [DeepSpeed document](/documentation/DEEPSPEED.md) which explains how to use 🤗Accelerate to configure Microsoft's DeepSpeed for optimiser state offload.
+メモリ制約のあるシステムについては、🤗Accelerateを使用してMicrosoftのDeepSpeedを最適化状態オフロードに設定する方法を説明した[DeepSpeedドキュメント](/documentation/DEEPSPEED.md)を参照してください。
 
-For multi-node distributed training, [this guide](/documentation/DISTRIBUTED.md) will help tweak the configurations from the INSTALL and Quickstart guides to be suitable for multi-node training, and optimising for image datasets numbering in the billions of samples.
+マルチノード分散トレーニングについては、[このガイド](/documentation/DISTRIBUTED.md)がINSTALLおよびクイックスタートガイドからの設定を調整し、数十億のサンプル数の画像データセットに適したマルチノードトレーニングを最適化するのに役立ちます。
 
 ---
 
-## Features
+## 機能
 
-- Multi-GPU training
-- Image and caption features (embeds) are cached to the hard drive in advance, so that training runs faster and with less memory consumption
-- Aspect bucketing: support for a variety of image sizes and aspect ratios, enabling widescreen and portrait training.
-- Refiner LoRA or full u-net training for SDXL
-- Most models are trainable on a 24G GPU, or even down to 16G at lower base resolutions.
-  - LoRA/LyCORIS training for PixArt, SDXL, SD3, and SD 2.x that uses less than 16G VRAM
-- DeepSpeed integration allowing for [training SDXL's full u-net on 12G of VRAM](/documentation/DEEPSPEED.md), albeit very slowly.
-- Quantised NF4/INT8/FP8 LoRA training, using low-precision base model to reduce VRAM consumption.
-- Optional EMA (Exponential moving average) weight network to counteract model overfitting and improve training stability. **Note:** This does not apply to LoRA.
-- Train directly from an S3-compatible storage provider, eliminating the requirement for expensive local storage. (Tested with Cloudflare R2 and Wasabi S3)
-- For only SDXL and SD 1.x/2.x, full [ControlNet model training](/documentation/CONTROLNET.md) (not ControlLoRA or ControlLite)
-- Training [Mixture of Experts](/documentation/MIXTURE_OF_EXPERTS.md) for lightweight, high-quality diffusion models
-- [Masked loss training](/documentation/DREAMBOOTH.md#masked-loss) for superior convergence and reduced overfitting on any model
-- Strong [prior regularisation](/documentation/DATALOADER.md#is_regularisation_data) training support for LyCORIS models
-- Webhook support for updating eg. Discord channels with your training progress, validations, and errors
-- Integration with the [Hugging Face Hub](https://huggingface.co) for seamless model upload and nice automatically-generated model cards.
+- マルチGPUトレーニング
+- 画像とキャプションの特徴（埋め込み）が事前にハードドライブにキャッシュされるため、トレーニングがより速く、メモリ消費が少なくなります。
+- アスペクトバケット: 様々な画像サイズとアスペクト比をサポートし、ワイドスクリーンおよびポートレートトレーニングを可能にします。
+- SDXLのためのリファイナLoRAまたはフルu-netトレーニング
+- ほとんどのモデルは24G GPUでトレーニング可能で、低いベース解像度では16Gまで対応可能です。
+  - 16G VRAM未満で動作するPixArt、SDXL、SD3、およびSD 2.xのためのLoRA/LyCORISトレーニング
+- DeepSpeed統合により、[12GのVRAMでSDXLのフルu-netをトレーニング](/documentation/DEEPSPEED.md)できますが、非常に遅くなります。
+- 低精度ベースモデルを使用してVRAM消費を削減するための量子化NF4/INT8/FP8 LoRAトレーニング。
+- モデルの過学習を抑制し、トレーニングの安定性を向上させるためのオプションのEMA（指数移動平均）重みネットワーク。**注意:** これはLoRAには適用されません。
+- 高価なローカルストレージの必要がなく、S3互換のストレージプロバイダーから直接トレーニングできます。（Cloudflare R2およびWasabi S3でテスト済み）
+- SDXLおよびSD 1.x/2.x専用のフル[ControlNetモデルトレーニング](/documentation/CONTROLNET.md)（ControlLoRAやControlLiteではありません）
+- 軽量で高品質な拡散モデルのための[Mixture of Experts](/documentation/MIXTURE_OF_EXPERTS.md)トレーニング
+- 優れた収束と過学習の低減のための[マスクドロストレーニング](/documentation/DREAMBOOTH.md#masked-loss)を提供
+- LyCORISモデルのための強力な[事前正則化](/documentation/DATALOADER.md#is_regularisation_data)トレーニングサポート
+- トレーニングの進捗、検証、エラーをDiscordチャンネルなどに更新するためのWebhookサポート
+- モデルのアップロードをシームレスに行い、自動生成されたモデルカードを提供する[Hugging Face Hub](https://huggingface.co)との統合。
 
 ### Flux.1
 
-Full training support for Flux.1 is included:
+Flux.1のフルトレーニングサポートが含まれています：
 
-- Classifier-free guidance training
-  - Leave it disabled and preserve the dev model's distillation qualities
-  - Or, reintroduce CFG to the model and improve its creativity at the cost of inference speed and training time.
-- (optional) T5 attention masked training for superior fine details and generalisation capabilities
-- LoRA or full tuning via DeepSpeed ZeRO on a single GPU
-- Quantise the base model using `--base_model_precision` to `int8-quanto` or `fp8-quanto` for major memory savings
+- クラシファイアフリーガイダンストレーニング
+  - 無効のままにして、開発モデルの蒸留特性を保持します。
+  - または、CFGをモデルに再導入し、推論速度とトレーニング時間のコストで創造性を向上させます。
+- （オプション）優れた細部と一般化能力のためのT5注意マスクトレーニング
+- 単一GPUでのLoRAまたはフルチューニングをDeepSpeed ZeROを使用して実施
+- 主要なメモリ節約のために、`--base_model_precision`を`int8-quanto`または`fp8-quanto`に設定してベースモデルを量子化
+```
 
 See [hardware requirements](#flux1-dev-schnell) or the [quickstart guide](/documentation/quickstart/FLUX.md).
 
 ### PixArt Sigma
 
-SimpleTuner has extensive training integration with PixArt Sigma - both the 600M & 900M models load without modification.
+SimpleTuner は PixArt Sigma との広範なトレーニング統合を提供しており、600M および 900M モデルは修正なしで読み込むことができます。
 
-- Text encoder training is not supported, as T5 is enormous.
-- LyCORIS and full tuning both work as expected
-- ControlNet training is not yet supported
-- [Two-stage PixArt](https://huggingface.co/ptx0/pixart-900m-1024-ft-v0.7-stage1) training support (see: [MIXTURE_OF_EXPERTS](/documentation/MIXTURE_OF_EXPERTS.md))
+- テキストエンコーダーのトレーニングはサポートされていません。T5 は非常に大きいためです。
+- LyCORIS とフルチューニングは期待通りに動作します。
+- ControlNet のトレーニングはまだサポートされていません。
+- [Two-stage PixArt](https://huggingface.co/ptx0/pixart-900m-1024-ft-v0.7-stage1) トレーニングサポート（参照: [MIXTURE_OF_EXPERTS](/documentation/MIXTURE_OF_EXPERTS.md)）
 
-See the [PixArt Quickstart](/documentation/quickstart/SIGMA.md) guide to start training.
+トレーニングを開始するには、[PixArt Quickstart](/documentation/quickstart/SIGMA.md) ガイドを参照してください。
 
 ### Stable Diffusion 3
 
-- LoRA and full finetuning are supported as usual.
-- ControlNet is not yet implemented.
-- Certain features such as segmented timestep selection and Compel long prompt weighting are not yet supported.
-- Parameters have been optimised to get the best results, validated through from-scratch training of SD3 models
+- LoRA とフルファインチューニングは通常通りサポートされています。
+- ControlNet はまだ実装されていません。
+- セグメント化されたタイムステップ選択や Compel 長いプロンプトの重み付けなどの特定の機能はまだサポートされていません。
+- パラメータは最良の結果を得るために最適化されており、SD3 モデルのゼロからのトレーニングを通じて検証されています。
 
-See the [Stable Diffusion 3 Quickstart](/documentation/quickstart/SD3.md) to get going.
+始めるには、[Stable Diffusion 3 Quickstart](/documentation/quickstart/SD3.md) を参照してください。
 
 ### Kwai Kolors
 
-An SDXL-based model with ChatGLM (General Language Model) 6B as its text encoder, **doubling** the hidden dimension size and substantially increasing the level of local detail included in the prompt embeds.
+ChatGLM (General Language Model) 6B をテキストエンコーダーとして使用した SDXL ベースのモデルで、**隠れ次元のサイズを倍増**し、プロンプト埋め込みに含まれるローカル詳細のレベルを大幅に増加させています。
 
-Kolors support is almost as deep as SDXL, minus ControlNet training support.
+Kolors のサポートは、ControlNet トレーニングサポートを除いて、SDXL とほぼ同じ深さです。
 
 ### Legacy Stable Diffusion models
 
-RunwayML's SD 1.5 and StabilityAI's SD 2.x are both trainable under the `legacy` designation.
+RunwayML の SD 1.5 と StabilityAI の SD 2.x は、どちらも `legacy` の指定の下でトレーニング可能です。
 
 ---
 
@@ -109,59 +110,59 @@ RunwayML's SD 1.5 and StabilityAI's SD 2.x are both trainable under the `legacy`
 
 ### NVIDIA
 
-Pretty much anything 3080 and up is a safe bet. YMMV.
+3080 以上のほぼすべてのモデルが安全な選択です。YMMV。
 
 ### AMD
 
-LoRA and full-rank tuning are verified working on a 7900 XTX 24GB and MI300X.
+LoRA とフルランクチューニングは、7900 XTX 24GB および MI300X で動作することが確認されています。
 
-Lacking `xformers`, it will use more memory than Nvidia equivalent hardware.
+`xformers` がないため、Nvidia の同等ハードウェアよりも多くのメモリを使用します。
 
 ### Apple
 
-LoRA and full-rank tuning are tested to work on an M3 Max with 128G memory, taking about **12G** of "Wired" memory and **4G** of system memory for SDXL.
-  - You likely need a 24G or greater machine for machine learning with M-series hardware due to the lack of memory-efficient attention.
-  - Subscribing to Pytorch issues for MPS is probably a good idea, as random bugs will make training stop working.
+LoRA とフルランクチューニングは、128G メモリを搭載した M3 Max で動作することが確認されており、SDXL には約 **12G** の「Wired」メモリと **4G** のシステムメモリを使用します。
+  - M シリーズハードウェアでの機械学習には、メモリ効率の良いアテンションが不足しているため、24G 以上のマシンが必要になる可能性があります。
+  - MPS に関する Pytorch の問題を購読するのは良いアイデアかもしれません。ランダムなバグがトレーニングを停止させることがあります。
 
 ### Flux.1 [dev, schnell]
 
-- A100-80G (Full tune with DeepSpeed)
+- A100-80G (フルチューン、DeepSpeed 使用)
 - A100-40G (LoRA, LoKr)
 - 3090 24G (LoRA, LoKr)
 - 4060 Ti 16G, 4070 Ti 16G, 3080 16G (int8, LoRA, LoKr)
 - 4070 Super 12G, 3080 10G, 3060 12GB (nf4, LoRA, LoKr)
 
-Flux prefers being trained with multiple large GPUs but a single 16G card should be able to do it with quantisation of the transformer and text encoders.
+Flux は複数の大きな GPU でのトレーニングを好みますが、単一の 16G カードでもトランスフォーマーとテキストエンコーダーの量子化を行うことで実行可能です。
 
 ### SDXL, 1024px
 
-- A100-80G (EMA, large batches, LoRA @ insane batch sizes)
-- A6000-48G (EMA@768px, no EMA@1024px, LoRA @ high batch sizes)
-- A100-40G (no EMA@1024px, no EMA@768px, EMA@512px, LoRA @ high batch sizes)
-- 4090-24G (no EMA@1024px, batch size 1-4, LoRA @ medium-high batch sizes)
-- 4080-12G (LoRA @ low-medium batch sizes)
+- A100-80G (EMA、大きなバッチ、LoRA @ 非常に大きなバッチサイズ)
+- A6000-48G (EMA@768px、EMA@1024px はなし、LoRA @ 高バッチサイズ)
+- A100-40G (EMA@1024px はなし、EMA@768px はなし、EMA@512px、LoRA @ 高バッチサイズ)
+- 4090-24G (EMA@1024px はなし、バッチサイズ 1-4、LoRA @ 中高バッチサイズ)
+- 4080-12G (LoRA @ 低中バッチサイズ)
 
 ### Stable Diffusion 2.x, 768px
 
-- 16G or better
+- 16G 以上
 
 
 ## Toolkit
 
-For more information about the associated toolkit distributed with SimpleTuner, refer to [the toolkit documentation](/toolkit/README.md).
+SimpleTuner に付属するツールキットに関する詳細は、[ツールキットのドキュメント](/toolkit/README.md)を参照してください。
 
 ## Setup
 
-Detailed setup information is available in the [installation documentation](/INSTALL.md).
+詳細なセットアップ情報は、[インストールドキュメント](/INSTALL.md)にあります。
 
 ## Troubleshooting
 
-Enable debug logs for a more detailed insight by adding `export SIMPLETUNER_LOG_LEVEL=DEBUG` to your environment (`config/config.env`) file.
+デバッグログを有効にするには、環境ファイル (`config/config.env`) に `export SIMPLETUNER_LOG_LEVEL=DEBUG` を追加してください。
 
-For performance analysis of the training loop, setting `SIMPLETUNER_TRAINING_LOOP_LOG_LEVEL=DEBUG` will have timestamps that highlight any issues in your configuration.
+トレーニングループのパフォーマンス分析のために、`SIMPLETUNER_TRAINING_LOOP_LOG_LEVEL=DEBUG` を設定すると、構成の問題を強調するタイムスタンプが表示されます。
 
-For a comprehensive list of options available, consult [this documentation](/OPTIONS.md).
+利用可能なオプションの包括的なリストについては、[このドキュメント](/OPTIONS.md)を参照してください。
 
 ## Discord
 
-For more help or to discuss training with like-minded folks, join [our Discord server](https://discord.gg/cSmvcU9Me9)
+さらにサポートが必要な場合や、同じ志を持つ人々とトレーニングについて話し合いたい場合は、[私たちの Discord サーバー](https://discord.gg/cSmvcU9Me9)に参加してください。
